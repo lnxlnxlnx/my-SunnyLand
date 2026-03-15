@@ -1,53 +1,64 @@
 #include "audio_player.h"
 #include "../resource/resource_manager.h"
-#include <SDL3_mixer/SDL_mixer.h> 
+#include <SDL3_mixer/SDL_mixer.h>
 #include <spdlog/spdlog.h>
-#include <glm/common.hpp>
 
 namespace engine::audio {
-AudioPlayer::~AudioPlayer() = default;
+AudioPlayer::~AudioPlayer() {
+    if (music_track_) {
+        MIX_DestroyTrack(music_track_);
+        music_track_ = nullptr;
+    }
+}
 
 AudioPlayer::AudioPlayer(engine::resource::ResourceManager* resource_manager)
     : resource_manager_(resource_manager) {
     if (!resource_manager_) {
         throw std::runtime_error("AudioPlayer 构造失败: 提供的 ResourceManager 指针为空。");
     }
+    mixer_ = resource_manager_->getMixer();
+    music_track_ = MIX_CreateTrack(mixer_);
+    if (!music_track_) {
+        throw std::runtime_error("AudioPlayer 构造失败: 无法创建音乐轨道: " + std::string(SDL_GetError()));
+    }
 }
 
-int AudioPlayer::playSound(std::string_view sound_path, int channel) {
+int AudioPlayer::playSound(std::string_view sound_path) {
 
-    Mix_Chunk* chunk = resource_manager_->getSound(sound_path); // 通过 ResourceManager 获取资源
-    if (!chunk) {
+    MIX_Audio* audio = resource_manager_->getSound(sound_path); // 通过 ResourceManager 获取资源
+    if (!audio) {
         spdlog::error("AudioPlayer: 无法获取音效 '{}' 播放。", sound_path);
         return -1;
     }
 
-    int played_channel = Mix_PlayChannel(channel, chunk, 0);    // 播放音效
-    if (played_channel == -1) {
+    if (!MIX_PlayAudio(mixer_, audio)) {    // 即发即忘方式播放音效
         spdlog::error("AudioPlayer: 无法播放音效 '{}': {}", sound_path, SDL_GetError());
-    } else {
-         spdlog::trace("AudioPlayer: 播放音效 '{}' 在通道 {}。", sound_path, played_channel);
+        return -1;
     }
-    return played_channel;
+    spdlog::trace("AudioPlayer: 播放音效 '{}'。", sound_path);
+    return 0;
 }
 
 bool AudioPlayer::playMusic(std::string_view music_path, int loops, int fade_in_ms) {
     if (music_path == current_music_) return true;      // 如果当前音乐已经在播放，则不重复播放
     current_music_ = music_path;
-    Mix_Music* music = resource_manager_->getMusic(music_path); // 通过 ResourceManager 获取资源
+    MIX_Audio* music = resource_manager_->getMusic(music_path); // 通过 ResourceManager 获取资源
     if (!music) {
         spdlog::error("AudioPlayer: 无法获取音乐 '{}' 播放。", music_path);
         return false;
     }
 
-    Mix_HaltMusic();        // 停止之前的音乐
+    MIX_StopTrack(music_track_, 0);         // 立即停止之前的音乐
+    MIX_SetTrackAudio(music_track_, music); // 设置音乐轨道的音频源
 
-    bool result = false;
+    // 配置播放参数（循环次数、淡入时长）
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetNumberProperty(props, MIX_PROP_PLAY_LOOPS_NUMBER, loops);
     if (fade_in_ms > 0) {
-         result = Mix_FadeInMusic(music, loops, fade_in_ms);    // 淡入播放音乐
-    } else {
-         result = Mix_PlayMusic(music, loops);
+        SDL_SetNumberProperty(props, MIX_PROP_PLAY_FADE_IN_MILLISECONDS_NUMBER, fade_in_ms);
     }
+    bool result = MIX_PlayTrack(music_track_, props);
+    SDL_DestroyProperties(props);
 
     if (!result) {
         spdlog::error("AudioPlayer: 无法播放音乐 '{}': {}", music_path, SDL_GetError());
@@ -58,45 +69,39 @@ bool AudioPlayer::playMusic(std::string_view music_path, int loops, int fade_in_
 }
 
 void AudioPlayer::stopMusic(int fade_out_ms) {
-    if (fade_out_ms > 0) {
-        Mix_FadeOutMusic(fade_out_ms);  // 淡出音乐
-    } else {
-        Mix_HaltMusic();
-    }
-     spdlog::trace("AudioPlayer: 停止音乐。");
+    Sint64 fade_frames = (fade_out_ms > 0) ? MIX_TrackMSToFrames(music_track_, fade_out_ms) : 0;
+    MIX_StopTrack(music_track_, fade_frames);
+    current_music_.clear();
+    spdlog::trace("AudioPlayer: 停止音乐。");
 }
 
 void AudioPlayer::pauseMusic() {
-    Mix_PauseMusic();
+    MIX_PauseTrack(music_track_);
     spdlog::trace("AudioPlayer: 暂停音乐。");
 }
 
 void AudioPlayer::resumeMusic() {
-    Mix_ResumeMusic();
+    MIX_ResumeTrack(music_track_);
     spdlog::trace("AudioPlayer: 恢复音乐。");
 }
 
-void AudioPlayer::setSoundVolume(float volume, int channel) {
-    // 将浮点音量(0-1)转换为SDL_mixer的音量(0-128)
-    int sdl_volume = static_cast<int>(glm::max(0.0f, glm::min(1.0f, volume)) * MIX_MAX_VOLUME);
-    Mix_Volume(channel, sdl_volume);
-    spdlog::trace("AudioPlayer: 设置通道 {} 的音量为 {:.2f}。", channel, volume);
+void AudioPlayer::setSoundVolume(float volume) {
+    // 通过混音器整体增益控制音效音量（0.0-1.0）
+    MIX_SetMixerGain(mixer_, volume);
+    spdlog::trace("AudioPlayer: 设置音效音量为 {:.2f}。", volume);
 }
 
 void AudioPlayer::setMusicVolume(float volume) {
-    int sdl_volume = static_cast<int>(glm::max(0.0f, glm::min(1.0f, volume)) * MIX_MAX_VOLUME);
-    Mix_VolumeMusic(sdl_volume);
+    MIX_SetTrackGain(music_track_, volume);
     spdlog::trace("AudioPlayer: 设置音乐音量为 {:.2f}。", volume);
 }
 
 float AudioPlayer::getMusicVolume() {
-    // SDL_mixer的音量(0-128)转为 0～1.0 的浮点数
-    return static_cast<float>(Mix_VolumeMusic(-1)) / static_cast<float>(MIX_MAX_VOLUME);
-                            /* 参数 -1 表示查询当前音量 */
+    return MIX_GetTrackGain(music_track_);
 }
 
-float AudioPlayer::getSoundVolume(int channel) {
-    return static_cast<float>(Mix_Volume(channel, -1)) / static_cast<float>(MIX_MAX_VOLUME);
+float AudioPlayer::getSoundVolume() {
+    return MIX_GetMixerGain(mixer_);
 }
 
 } // namespace engine::audio

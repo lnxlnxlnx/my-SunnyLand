@@ -7,8 +7,8 @@
 // 前向声明 SDL 类型
 struct SDL_Renderer;
 struct SDL_Texture;
-struct Mix_Chunk;
-struct Mix_Music;
+struct MIX_Audio;
+struct MIX_Mixer;
 struct TTF_Font;
 
 namespace engine::resource {
@@ -54,17 +54,20 @@ public:
     glm::vec2 getTextureSize(std::string_view file_path);    ///< @brief 获取指定纹理的尺寸
     void clearTextures();                                      ///< @brief 清空所有纹理资源
 
-    // -- Sound Effects (Chunks) --
-    Mix_Chunk* loadSound(std::string_view file_path);         ///< @brief 载入音效资源
-    Mix_Chunk* getSound(std::string_view file_path);          ///< @brief 尝试获取已加载音效的指针，如果未加载则尝试加载
+    // -- Sound Effects --
+    MIX_Audio* loadSound(std::string_view file_path);         ///< @brief 载入音效资源
+    MIX_Audio* getSound(std::string_view file_path);          ///< @brief 尝试获取已加载音效的指针，如果未加载则尝试加载
     void unloadSound(std::string_view file_path);             ///< @brief 卸载指定的音效资源
     void clearSounds();                                         ///< @brief 清空所有音效资源
 
     // -- Music --
-    Mix_Music* loadMusic(std::string_view file_path);         ///< @brief 载入音乐资源
-    Mix_Music* getMusic(std::string_view file_path);          ///< @brief 尝试获取已加载音乐的指针，如果未加载则尝试加载
+    MIX_Audio* loadMusic(std::string_view file_path);         ///< @brief 载入音乐资源
+    MIX_Audio* getMusic(std::string_view file_path);          ///< @brief 尝试获取已加载音乐的指针，如果未加载则尝试加载
     void unloadMusic(std::string_view file_path);             ///< @brief 卸载指定的音乐资源
     void clearMusic();                                          ///< @brief 清空所有音乐资源
+
+    // -- Mixer --
+    MIX_Mixer* getMixer();                                      ///< @brief 获取 SDL_mixer 混音器指针
 
     // -- Fonts --
     TTF_Font* loadFont(std::string_view file_path, int point_size);     ///< @brief 载入字体资源

@@ -27,14 +27,14 @@ void AudioComponent::init()
     }
 }
 
-void AudioComponent::playSound(std::string_view sound_id, int channel, bool use_spatial)
+void AudioComponent::playSound(std::string_view sound_id, bool use_spatial)
 {
     // 如果 sound_id 是音效 ID，则在查找在map中查找对应的路径； 没找到的话则把 sound_id 当作路径直接使用
     auto sound_path = sound_id_to_path_.find(std::string(sound_id)) != sound_id_to_path_.end() ? sound_id_to_path_[std::string(sound_id)] : sound_id;
 
     if (use_spatial && transform_) {    // 使用空间定位
-        // TODO: (SDL_Mixer 不支持空间定位，未来更换音频库时可以方便地实现)
-                // 这里给一个简单的功能：150像素范围内播放，否则不播放
+        // TODO: 正式版 SDL3_Mixer 已经支持空间定位，但本期课程不展开，你可以尝试自己完成。
+            // 这里给一个简单的功能：150像素范围内播放，否则不播放
         auto camera_center = camera_->getPosition() + camera_->getViewportSize() / 2.0f; // 相机中心
         auto object_pos = transform_->getPosition();
         float distance = glm::length(camera_center - object_pos);
@@ -42,10 +42,8 @@ void AudioComponent::playSound(std::string_view sound_id, int channel, bool use_
             spdlog::debug("AudioComponent::playSound: 音效 '{}' 超出范围，不播放。", sound_id);
             return; // 超出范围，不播放
         }
-        audio_player_->playSound(sound_path, channel);
-    } else {    // 不使用空间定位
-        audio_player_->playSound(sound_path, channel);
     }
+    audio_player_->playSound(sound_path);
 }
 
 void AudioComponent::addSound(std::string_view sound_id, std::string_view sound_path)

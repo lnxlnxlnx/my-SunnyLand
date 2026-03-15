@@ -6,8 +6,8 @@ namespace engine::resource {
     class ResourceManager;
 }
 
-struct Mix_Chunk;
-struct Mix_Music;
+struct MIX_Mixer;
+struct MIX_Track;
 
 namespace engine::audio {
 
@@ -20,6 +20,8 @@ namespace engine::audio {
 class AudioPlayer final{
 private:
     engine::resource::ResourceManager* resource_manager_;   ///< @brief 指向 ResourceManager 的非拥有指针，用于加载和管理音频资源。
+    MIX_Mixer* mixer_{nullptr};         ///< @brief SDL_mixer 混音器指针（非拥有）。
+    MIX_Track* music_track_{nullptr};   ///< @brief 专用于背景音乐播放的轨道（拥有）。
     std::string current_music_;         ///< @brief 当前正在播放的音乐路径，用于避免重复播放同一音乐。
 
 public:
@@ -37,13 +39,12 @@ public:
 
     // --- 播放控制方法 --- 
     /**
-     * @brief 播放音效（chunk）。
+     * @brief 播放音效。
      * 如果尚未缓存，则通过 ResourceManager 加载音效。
      * @param sound_path 音效文件的路径。
-     * @param channel 要播放的特定通道，或 -1 表示第一个可用通道。默认为 -1。
-     * @return 音效正在播放的通道，出错时返回 -1。
+     * @return 成功返回 0，出错返回 -1。
      */
-    int playSound(std::string_view sound_path, int channel = -1);
+    int playSound(std::string_view sound_path);
 
     /**
      * @brief 播放背景音乐。如果正在播放，则淡出之前的音乐。
@@ -72,11 +73,10 @@ public:
     void resumeMusic();
 
     /**
-     * @brief 设置音效通道的音量。
+     * @brief 设置音效音量。
      * @param volume 音量级别（0.0-1.0）。
-     * @param channel 通道号（-1 表示所有通道）。默认为 -1。
      */
-    void setSoundVolume(float volume, int channel = -1);
+    void setSoundVolume(float volume);
 
     /**
      * @brief 设置音乐通道的音量。
@@ -92,10 +92,9 @@ public:
 
     /**
      * @brief 获取当前音效音量。
-     * @param channel 通道号（-1 表示所有通道）。默认为 -1。
      * @return 音量级别（0.0-1.0）。
      */
-    float getSoundVolume(int channel = -1);
+    float getSoundVolume();
 
 };
 

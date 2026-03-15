@@ -39,11 +39,10 @@ public:
 
     /**
      * @brief 播放音效。
-     * @param sound_path 音效文件的id (或路径)。
-     * @param channel 要播放的特定通道，或 -1 表示第一个可用通道。
+     * @param sound_id 音效文件的id (或路径)。
      * @param use_spatial 是否使用空间定位。
      */
-    void playSound(std::string_view sound_id, int channel = -1, bool use_spatial = false);
+    void playSound(std::string_view sound_id, bool use_spatial = false);
 
     /**
      * @brief 添加音效到映射表。

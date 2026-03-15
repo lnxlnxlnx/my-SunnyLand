@@ -52,11 +52,11 @@ void ResourceManager::clearTextures() {
 }
 
 // --- 音频接口实现 ---
-Mix_Chunk* ResourceManager::loadSound(std::string_view file_path) {
+MIX_Audio* ResourceManager::loadSound(std::string_view file_path) {
     return audio_manager_->loadSound(file_path);
 }
 
-Mix_Chunk* ResourceManager::getSound(std::string_view file_path) {
+MIX_Audio* ResourceManager::getSound(std::string_view file_path) {
     return audio_manager_->getSound(file_path);
 }
 
@@ -68,11 +68,11 @@ void ResourceManager::clearSounds() {
     audio_manager_->clearSounds();
 }
 
-Mix_Music* ResourceManager::loadMusic(std::string_view file_path) {
+MIX_Audio* ResourceManager::loadMusic(std::string_view file_path) {
     return audio_manager_->loadMusic(file_path);
 }
 
-Mix_Music* ResourceManager::getMusic(std::string_view file_path) {
+MIX_Audio* ResourceManager::getMusic(std::string_view file_path) {
     return audio_manager_->getMusic(file_path);
 }
 
@@ -82,6 +82,10 @@ void ResourceManager::unloadMusic(std::string_view file_path) {
 
 void ResourceManager::clearMusic() {
     audio_manager_->clearMusic();
+}
+
+MIX_Mixer* ResourceManager::getMixer() {
+    return audio_manager_->getMixer();
 }
 
 // --- 字体接口实现 ---

@@ -10,7 +10,7 @@
 namespace engine::resource {
 
 /**
- * @brief 管理 SDL_mixer 音效 (Mix_Chunk) 和音乐 (Mix_Music)。
+ * @brief 管理 SDL_mixer 音效和音乐 (统一为 MIX_Audio 类型)。
  *
  * 提供音频资源的加载和缓存功能。构造失败时会抛出异常。
  * 仅供 ResourceManager 内部使用。
@@ -19,33 +19,26 @@ class AudioManager final{
     friend class ResourceManager;
 
 private:
-    // Mix_Chunk 的自定义删除器
-    struct SDLMixChunkDeleter {
-        void operator()(Mix_Chunk* chunk) const {
-            if (chunk) {
-                Mix_FreeChunk(chunk);
+    // MIX_Audio 的自定义删除器（音效和音乐统一类型）
+    struct MIXAudioDeleter {
+        void operator()(MIX_Audio* audio) const {
+            if (audio) {
+                MIX_DestroyAudio(audio);
             }
         }
     };
 
-    // Mix_Music 的自定义删除器
-    struct SDLMixMusicDeleter {
-        void operator()(Mix_Music* music) const {
-            if (music) {
-                Mix_FreeMusic(music);
-            }
-        }
-    };
+    MIX_Mixer* mixer_{nullptr};  ///< @brief SDL_mixer 混音器实例
 
-    // 音效存储 (文件路径 -> Mix_Chunk)
-    std::unordered_map<std::string, std::unique_ptr<Mix_Chunk, SDLMixChunkDeleter>> sounds_;
-    // 音乐存储 (文件路径 -> Mix_Music)
-    std::unordered_map<std::string, std::unique_ptr<Mix_Music, SDLMixMusicDeleter>> music_;
+    // 音效存储 (文件路径 -> MIX_Audio，预解码)
+    std::unordered_map<std::string, std::unique_ptr<MIX_Audio, MIXAudioDeleter>> sounds_;
+    // 音乐存储 (文件路径 -> MIX_Audio，流式解码)
+    std::unordered_map<std::string, std::unique_ptr<MIX_Audio, MIXAudioDeleter>> music_;
 
 public:
     /**
-     * @brief 构造函数。初始化 SDL_mixer 并打开音频设备。
-     * @throws std::runtime_error 如果 SDL_mixer 初始化或打开音频设备失败。
+     * @brief 构造函数。初始化 SDL_mixer 并创建音频设备混音器。
+     * @throws std::runtime_error 如果 SDL_mixer 初始化或创建混音器失败。
      */
     AudioManager();
 
@@ -57,15 +50,17 @@ public:
     AudioManager(AudioManager&&) = delete;
     AudioManager& operator=(AudioManager&&) = delete;
 
+    MIX_Mixer* getMixer() const { return mixer_; }  ///< @brief 获取混音器指针
+
 private:  // 仅供 ResourceManager 访问的方法
 
-    Mix_Chunk* loadSound(std::string_view file_path);     ///< @brief 从文件路径加载音效
-    Mix_Chunk* getSound(std::string_view file_path);      ///< @brief 尝试获取已加载音效的指针，如果未加载则尝试加载
+    MIX_Audio* loadSound(std::string_view file_path);     ///< @brief 从文件路径加载音效（预解码）
+    MIX_Audio* getSound(std::string_view file_path);      ///< @brief 尝试获取已加载音效的指针，如果未加载则尝试加载
     void unloadSound(std::string_view file_path);         ///< @brief 卸载指定的音效资源
     void clearSounds();                                      ///< @brief 清空所有音效资源
 
-    Mix_Music* loadMusic(std::string_view file_path);     ///< @brief 从文件路径加载音乐
-    Mix_Music* getMusic(std::string_view file_path);      ///< @brief 尝试获取已加载音乐的指针，如果未加载则尝试加载
+    MIX_Audio* loadMusic(std::string_view file_path);     ///< @brief 从文件路径加载音乐（流式解码）
+    MIX_Audio* getMusic(std::string_view file_path);      ///< @brief 尝试获取已加载音乐的指针，如果未加载则尝试加载
     void unloadMusic(std::string_view file_path);         ///< @brief 卸载指定的音乐资源
     void clearMusic();                                      ///< @brief 清空所有音乐资源
 
