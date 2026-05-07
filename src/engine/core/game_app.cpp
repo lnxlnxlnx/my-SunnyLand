@@ -61,7 +61,9 @@ namespace engine::core
             return false;
         }
 
+        // 初始化时间管理器
         time_manager_ = std::make_unique<engine::core::Time>();
+        time_manager_->setTargetFps(144); // 设置目标帧率为 144 FPS
 
         is_running_ = true;
         return true;

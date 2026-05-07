@@ -25,7 +25,7 @@ namespace engine::core
             delta_time_ = current_delta_time;
         }
         last_time_ = frame_start_time_;
-        spdlog::trace("Time 更新。Delta time: {:.6f} 秒", delta_time_);
+        spdlog::trace("Time 更新。Delta time: {:.6f} 秒, 帧率: {:.2f}", delta_time_, 1.0 / delta_time_);
     }
 
     void Time::limitFrameRate(float current_delta_time)
