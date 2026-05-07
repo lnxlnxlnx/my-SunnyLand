@@ -1,6 +1,7 @@
 #include "game_app.h"
 #include <SDL3/SDL.h>
 #include <spdlog/spdlog.h>
+#include "timer.h"
 
 namespace engine::core
 {
@@ -26,7 +27,8 @@ namespace engine::core
 
         while (is_running_)
         {
-            float delta_time = 0.01f; // 每帧的时间间隔（临时设定）
+            time_manager_->update();
+            float delta_time = time_manager_->getDeltaTime();
             handleEvents();
             update(delta_time);
             render();
@@ -58,6 +60,8 @@ namespace engine::core
             spdlog::error("无法创建渲染器! SDL错误: {}", SDL_GetError());
             return false;
         }
+
+        time_manager_ = std::make_unique<engine::core::Time>();
 
         is_running_ = true;
         return true;

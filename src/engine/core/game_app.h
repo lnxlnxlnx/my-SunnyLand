@@ -1,4 +1,5 @@
 #pragma once
+#include <memory> // 用于 std::unique_ptr
 
 // 前向声明, 减少头文件的依赖，增加编译速度
 struct SDL_Window;
@@ -6,7 +7,7 @@ struct SDL_Renderer;
 
 namespace engine::core
 {
-
+class Time;
     /**
      * @brief 主游戏应用程序类，初始化SDL，管理游戏循环。
      */
@@ -16,6 +17,8 @@ namespace engine::core
         SDL_Window *window_ = nullptr;
         SDL_Renderer *sdl_renderer_ = nullptr;
         bool is_running_ = false;
+
+        std::unique_ptr<engine::core::Time> time_manager_; // 用于管理游戏时间和帧率
 
     public:
         GameApp();
