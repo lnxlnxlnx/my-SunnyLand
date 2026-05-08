@@ -4,8 +4,15 @@
 // 前向声明, 减少头文件的依赖，增加编译速度
 struct SDL_Window;
 struct SDL_Renderer;
-namespace engine::resource {
+namespace engine::resource
+{
     class ResourceManager;
+}
+namespace engine::render
+{
+    class Camera;
+    class Renderer;
+    class Sprite;
 }
 namespace engine::core
 {
@@ -16,7 +23,6 @@ namespace engine::core
     class GameApp final
     {
     private:
-    
         // SDL 相关成员
         SDL_Window *window_ = nullptr;
         SDL_Renderer *sdl_renderer_ = nullptr;
@@ -26,6 +32,11 @@ namespace engine::core
         std::unique_ptr<engine::resource::ResourceManager> resource_manager_;
 
         std::unique_ptr<engine::core::Time> time_manager_; // 用于管理游戏时间和帧率
+
+        // 渲染管理器
+        std::unique_ptr<engine::render::Renderer> renderer_; // 用于处理所有渲染操作
+        // 相机系统
+        std::unique_ptr<engine::render::Camera> camera_; // 用于处理视口变换和跟随
 
     public:
         GameApp();
@@ -53,12 +64,16 @@ namespace engine::core
         // 其他私有成员函数和变量
 
         // 各模块的初始化/创建函数，在init()中调用
-        bool initSDL();
-        bool initTime();
-        bool initResourceManager();
+        [[nodiscard]] bool initSDL();
+        [[nodiscard]] bool initTime();
+        [[nodiscard]] bool initResourceManager();
+        [[nodiscard]] bool initRenderer();
+        [[nodiscard]] bool initCamera();
 
         // 测试用函数
         void testResourceManager();
+        void testRenderer();
+        void testCamera();
     };
 
 } // namespace engine::core

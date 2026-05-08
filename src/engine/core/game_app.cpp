@@ -10,6 +10,9 @@
 #include <spdlog/spdlog.h>
 #include "timer.h"
 #include "../resource/resource_manager.h"
+#include "../render/renderer.h"
+#include "../render/camera.h"
+#include "../render/sprite.h"
 
 namespace engine::core
 {
@@ -54,6 +57,10 @@ namespace engine::core
             return false;
         if (!initResourceManager())
             return false;
+        if (!initRenderer())
+            return false;
+        if (!initCamera())
+            return false;
 
         // 测试资源管理器
         testResourceManager();
@@ -76,12 +83,14 @@ namespace engine::core
 
     void GameApp::update(float /* delta_time */)
     {
-        // 游戏逻辑更新，暂时为空
+        testCamera();
     }
 
     void GameApp::render()
     {
-        // 渲染代码，暂时为空
+        renderer_->clearScreen();
+        testRenderer();
+        renderer_->present();
     }
 
     void GameApp::close()
@@ -109,7 +118,7 @@ namespace engine::core
             return false;
         }
 
-        window_ = SDL_CreateWindow("SunnyLand", 1280, 720, SDL_WINDOW_RESIZABLE);
+        window_ = SDL_CreateWindow("SunnyLand", 640, 360, SDL_WINDOW_RESIZABLE);
         if (window_ == nullptr)
         {
             spdlog::error("无法创建窗口! SDL错误: {}", SDL_GetError());
@@ -122,6 +131,7 @@ namespace engine::core
             spdlog::error("无法创建渲染器! SDL错误: {}", SDL_GetError());
             return false;
         }
+        SDL_SetRenderLogicalPresentation(sdl_renderer_, 640, 360, SDL_LOGICAL_PRESENTATION_LETTERBOX);
         return true;
     }
 
@@ -157,6 +167,34 @@ namespace engine::core
         return true;
     }
 
+    bool GameApp::initRenderer()
+    {
+        try
+        {
+            renderer_ = std::make_unique<engine::render::Renderer>(sdl_renderer_, resource_manager_.get());
+        }
+        catch (const std::exception &e)
+        {
+            spdlog::error("Renderer 初始化失败: {}", e.what());
+            return false;
+        }
+        return true;
+    }
+
+    bool GameApp::initCamera()
+    {
+        try
+        {
+            camera_ = std::make_unique<engine::render::Camera>(glm::vec2(640.0f, 360.0f));
+        }
+        catch (const std::exception &e)
+        {
+            spdlog::error("Camera 初始化失败: {}", e.what());
+            return false;
+        }
+        return true;
+    }
+
     void GameApp::testResourceManager()
     {
         resource_manager_->getTexture("assets/textures/Actors/eagle-attack.png");
@@ -166,6 +204,36 @@ namespace engine::core
         resource_manager_->unloadTexture("assets/textures/Actors/eagle-attack.png");
         resource_manager_->unloadFont("assets/fonts/VonwaonBitmap-16px.ttf", 16);
         resource_manager_->unloadSound("assets/audio/button_click.wav");
+    }
+
+    void GameApp::testRenderer()
+    {
+        engine::render::Sprite sprite_world("assets/textures/Actors/frog.png");
+        engine::render::Sprite sprite_ui("assets/textures/UI/buttons/Start1.png");
+        engine::render::Sprite sprite_parallax("assets/textures/Layers/back.png");
+
+        static float rotation = 0.0f;
+        rotation += 0.1f;
+
+        // 注意渲染顺序
+        renderer_->drawParallax(*camera_, sprite_parallax, glm::vec2(100, 100), glm::vec2(0.5f, 0.5f), glm::bvec2(true, false));
+        renderer_->drawSprite(*camera_, sprite_world, glm::vec2(200, 200), glm::vec2(1.0f, 1.0f), rotation);
+        renderer_->drawUISprite(sprite_ui, glm::vec2(100, 100));
+    }
+
+    void GameApp::testCamera()
+    {
+        auto keyboard_state = SDL_GetKeyboardState(nullptr);
+        if (keyboard_state[SDL_SCANCODE_W])
+            camera_->move(glm::vec2(0.0f, -1.0f));
+        if (keyboard_state[SDL_SCANCODE_S])
+            camera_->move(glm::vec2(0.0f, 1.0f));
+        if (keyboard_state[SDL_SCANCODE_A])
+            camera_->move(glm::vec2(-1.0f, 0.0f));
+        if (keyboard_state[SDL_SCANCODE_D])
+            camera_->move(glm::vec2(1.0f, 0.0f));
+        if (keyboard_state[SDL_SCANCODE_ESCAPE])
+            is_running_ = false;
     }
 
 } // namespace engine::core

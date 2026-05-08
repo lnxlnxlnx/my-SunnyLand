@@ -15,6 +15,11 @@ namespace engine::render
         // 目前没有自动更新逻辑，留空以备将来使用
     }
 
+    /*** 
+     * @description: 每次调用这个函数时，都会根据传入的偏移量移动相机位置，并调用clampPosition()确保相机位置在限制范围内。
+     * @param {vec2} &offset
+     * @return {*}
+     */
     void Camera::move(const glm::vec2 &offset)
     {
         position_ += offset;

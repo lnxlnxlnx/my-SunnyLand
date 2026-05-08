@@ -1,7 +1,7 @@
 /*** 
  * @Date: 2026-05-08 20:03:09
  * @LastEditors: lnx a16725798566@163.com
- * @LastEditTime: 2026-05-08 20:08:16
+ * @LastEditTime: 2026-05-08 21:47:10
  * @FilePath: /SunnyLand/src/engine/render/sprite.h
  * @Description: 
  */
@@ -24,7 +24,7 @@ namespace engine::render {
  */
 class Sprite final{
 private:
-    std::string texture_id_;                      ///< @brief 纹理资源的标识符
+    std::string texture_id_;                      ///< @brief 纹理资源的标识符，通常是资源管理器中的纹理文件名
     std::optional<SDL_FRect> source_rect_;        ///< @brief 可选：要绘制的纹理部分
     bool is_flipped_ = false;                     ///< @brief 是否水平翻转
 
@@ -43,7 +43,7 @@ public:
     {}
 
     // --- getters and setters ---
-    const std::string& getTextureId() const { return texture_id_; }                                     ///< @brief 获取纹理 ID
+    const std::string& getTextureId() const { return texture_id_; }                                     ///< @brief 获取纹理 ID，ID 为资源管理器中的纹理文件名
     const std::optional<SDL_FRect>& getSourceRect() const { return source_rect_; }                      ///< @brief 获取源矩形 (如果使用整个纹理则为 std::nullopt)
     bool isFlipped() const { return is_flipped_; }                                                      ///< @brief 获取是否水平翻转
 
