@@ -1,3 +1,11 @@
+/*** 
+ * @Date: 2026-05-07 23:19:44
+ * @LastEditors: lnx a16725798566@163.com
+ * @LastEditTime: 2026-05-08 11:23:59
+ * @FilePath: /SunnyLand/src/engine/resource/texture_manager.cpp
+ * @Description: 
+ */
+
 #include "texture_manager.h"
 #include <SDL3_image/SDL_image.h> // 用于 IMG_LoadTexture, IMG_Init, IMG_Quit
 #include <spdlog/spdlog.h>
@@ -15,6 +23,12 @@ namespace engine::resource
         // SDL3中不再需要手动调用IMG_Init/IMG_Quit
         spdlog::trace("TextureManager 构造成功。");
     }
+
+    /*** 
+     * @description: 
+     * @param {string} &file_path
+     * @return {*}
+     */
     SDL_Texture *TextureManager::loadTexture(const std::string &file_path)
     {
         auto it = textures_.find(file_path);
