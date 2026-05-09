@@ -83,7 +83,7 @@ namespace engine::core
         return false;
     }
     /***
-     * @description: 反序列化配置文件，支持部分字段缺失，使用默认值。
+     * @description: 反序列化配置文件，支持部分字段缺失，使用默认值。注意配置文件的数值需自己判断是否合法（如窗口尺寸、FPS不能为负数等）
      * @param {json} &j
      * @return {*}
      * TODO: 可以添加更多的错误检查和日志记录以及文件参数的验证等，以帮助调试配置文件问题。
@@ -114,8 +114,11 @@ namespace engine::core
             if (audio.contains("sound_volume"))
                 sound_volume_ = audio["sound_volume"];
         }
-        if (j.contains("input_mappings") && j["input_mappings"].is_object())
-            input_mappings_ = j["input_mappings"].get<std::unordered_map<std::string, std::vector<std::string>>>();
+        if (j.contains("input_mappings") && j["input_mappings"].is_object()){
+            //input_mappings_ = j["input_mappings"].get<std::unordered_map<std::string, std::vector<std::string>>>();
+            auto input_mappings = j["input_mappings"].get<std::unordered_map<std::string, std::vector<std::string>>>();
+            input_mappings_ = std::move(input_mappings);
+        }
     }
     /***
      * @description: 将配置转换为 JSON 对象，序列化时保持字段顺序以提高可读性。

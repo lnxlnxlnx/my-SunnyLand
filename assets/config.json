@@ -16,12 +16,33 @@
         "sound_volume": 0.5
     },
     "input_mappings": {
-        "pause": [ "P", "Escape" ],
-        "move_down": [ "S", "Down" ],
-        "jump": [ "J", "Space" ],
-        "move_up": [ "W", "Up" ],
-        "move_right": [ "D", "Right" ],
-        "attack": [ "K", "MouseLeft" ],
-        "move_left": [ "A", "Left" ]
+        "pause": [
+            "P",
+            "Escape"
+        ],
+        "attack": [
+            "K",
+            "MouseLeft"
+        ],
+        "jump": [
+            "J",
+            "Space"
+        ],
+        "move_down": [
+            "S",
+            "Down"
+        ],
+        "move_up": [
+            "W",
+            "Up"
+        ],
+        "move_right": [
+            "D",
+            "Right"
+        ],
+        "move_left": [
+            "A",
+            "Left"
+        ]
     }
 }

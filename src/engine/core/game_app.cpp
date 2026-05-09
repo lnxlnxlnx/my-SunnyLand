@@ -52,7 +52,7 @@ namespace engine::core
     bool GameApp::init()
     {
         spdlog::trace("初始化 GameApp ...");
-        if (!initConfig())      // 初始化配置文件, 失败则无法继续，因为后续的模块初始化都依赖于配置设置。
+        if (!initConfig()) // 初始化配置文件, 失败则无法继续，因为后续的模块初始化都依赖于配置设置。
             return false;
         if (!initSDL())
             return false;
@@ -66,7 +66,7 @@ namespace engine::core
             return false;
 
         // 测试资源管理器
-        //testResourceManager();
+        // testResourceManager();
 
         is_running_ = true;
         return true;
@@ -134,7 +134,14 @@ namespace engine::core
             spdlog::error("无法创建渲染器! SDL错误: {}", SDL_GetError());
             return false;
         }
-        SDL_SetRenderLogicalPresentation(sdl_renderer_, config_->window_width_, config_->window_height_, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+        // 设置 VSync (注意: VSync 开启时，驱动程序会尝试将帧率限制到显示器刷新率，有可能会覆盖我们手动设置的 target_fps)
+        int vsync_mode = config_->vsync_enabled_ ? SDL_RENDERER_VSYNC_ADAPTIVE : SDL_RENDERER_VSYNC_DISABLED;
+        SDL_SetRenderVSync(sdl_renderer_, vsync_mode);
+        spdlog::trace("VSync 设置为: {}", config_->vsync_enabled_ ? "Enabled" : "Disabled");
+
+        // 设置逻辑分辨率为窗口大小的一半（针对像素游戏）
+        SDL_SetRenderLogicalPresentation(sdl_renderer_, config_->window_width_ / 2, config_->window_height_ / 2, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+        spdlog::trace("SDL 初始化成功。");
         return true;
     }
 
