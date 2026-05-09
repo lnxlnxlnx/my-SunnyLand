@@ -12,6 +12,19 @@
 
 namespace engine::core
 {
+    Config::Config(const std::string &filepath)
+    {
+        if (!loadFromFile(filepath))
+        {
+            spdlog::error("无法加载配置文件: {}", filepath);
+        }
+    }
+
+    /*** 
+     * @description: 加载配置文件，使用 nlohmann::json 库进行解析。成功加载文件返回 true，否则返回 false并使用默认值。如果文件不存在或无法打开，将创建一个默认配置文件。
+     * @param {string} &filepath
+     * @return {*}
+     */
     bool Config::loadFromFile(const std::string &filepath)
     {
         std::ifstream file(filepath);
@@ -40,7 +53,7 @@ namespace engine::core
             spdlog::error("加载配置文件时出错: {}", e.what());
             return false;
         }
-        return true;
+        return false;
     }
     /*** 
      * @description: 提供将当前配置保存到 JSON 文件的功能，使用 nlohmann::json 库进行序列化。成功保存返回 true，否则返回 false。

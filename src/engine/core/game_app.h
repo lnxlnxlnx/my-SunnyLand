@@ -38,6 +38,8 @@ namespace engine::core
         std::unique_ptr<engine::render::Renderer> renderer_; // 用于处理所有渲染操作
         // 相机系统
         std::unique_ptr<engine::render::Camera> camera_; // 用于处理视口变换和跟随
+        // 配置管理器
+        std::unique_ptr<engine::core::Config> config_; // 用于加载和管理游戏配置设置
 
     public:
         GameApp();
@@ -70,6 +72,7 @@ namespace engine::core
         [[nodiscard]] bool initResourceManager();
         [[nodiscard]] bool initRenderer();
         [[nodiscard]] bool initCamera();
+        [[nodiscard]] bool initConfig();
 
         // 测试用函数
         void testResourceManager();

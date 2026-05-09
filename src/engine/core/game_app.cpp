@@ -9,6 +9,7 @@
 #include <SDL3/SDL.h>
 #include <spdlog/spdlog.h>
 #include "timer.h"
+#include "config.h"
 #include "../resource/resource_manager.h"
 #include "../render/renderer.h"
 #include "../render/camera.h"
@@ -51,6 +52,8 @@ namespace engine::core
     bool GameApp::init()
     {
         spdlog::trace("初始化 GameApp ...");
+        if (!initConfig())      // 初始化配置文件, 失败则无法继续，因为后续的模块初始化都依赖于配置设置。
+            return false;
         if (!initSDL())
             return false;
         if (!initTime())
@@ -63,7 +66,7 @@ namespace engine::core
             return false;
 
         // 测试资源管理器
-        testResourceManager();
+        //testResourceManager();
 
         is_running_ = true;
         return true;
@@ -118,7 +121,7 @@ namespace engine::core
             return false;
         }
 
-        window_ = SDL_CreateWindow("SunnyLand", 640, 360, SDL_WINDOW_RESIZABLE);
+        window_ = SDL_CreateWindow("SunnyLand", config_->window_width_, config_->window_height_, SDL_WINDOW_RESIZABLE);
         if (window_ == nullptr)
         {
             spdlog::error("无法创建窗口! SDL错误: {}", SDL_GetError());
@@ -131,7 +134,7 @@ namespace engine::core
             spdlog::error("无法创建渲染器! SDL错误: {}", SDL_GetError());
             return false;
         }
-        SDL_SetRenderLogicalPresentation(sdl_renderer_, 640, 360, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+        SDL_SetRenderLogicalPresentation(sdl_renderer_, config_->window_width_, config_->window_height_, SDL_LOGICAL_PRESENTATION_LETTERBOX);
         return true;
     }
 
@@ -144,7 +147,7 @@ namespace engine::core
             spdlog::error("无法创建 Time 管理器!");
             return false;
         }
-        time_manager_->setTargetFps(144); // 设置目标帧率为 144 FPS
+        time_manager_->setTargetFps(config_->target_fps_); // 设置目标帧率为 config_的 FPS
         return true;
     }
 
@@ -185,11 +188,26 @@ namespace engine::core
     {
         try
         {
-            camera_ = std::make_unique<engine::render::Camera>(glm::vec2(640.0f, 360.0f));
+            auto viewport_size = glm::vec2(config_->window_width_, config_->window_height_);
+            camera_ = std::make_unique<engine::render::Camera>(viewport_size);
         }
         catch (const std::exception &e)
         {
             spdlog::error("Camera 初始化失败: {}", e.what());
+            return false;
+        }
+        return true;
+    }
+
+    bool GameApp::initConfig()
+    {
+        try
+        {
+            config_ = std::make_unique<engine::core::Config>("assets/config.json");
+        }
+        catch (const std::exception &e)
+        {
+            spdlog::error("Config 初始化失败: {}", e.what());
             return false;
         }
         return true;
