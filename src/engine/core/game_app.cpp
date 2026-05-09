@@ -14,6 +14,7 @@
 #include "../render/renderer.h"
 #include "../render/camera.h"
 #include "../render/sprite.h"
+#include "../input/input_manager.h"
 
 namespace engine::core
 {
@@ -41,6 +42,7 @@ namespace engine::core
         {
             time_manager_->update();
             float delta_time = time_manager_->getDeltaTime();
+            input_manager_->update(); // 处理输入事件并更新状态
             handleEvents();
             update(delta_time);
             render();
@@ -64,6 +66,8 @@ namespace engine::core
             return false;
         if (!initCamera())
             return false;
+        if (!initInputManager())
+            return false;
 
         // 测试资源管理器
         // testResourceManager();
@@ -74,19 +78,16 @@ namespace engine::core
 
     void GameApp::handleEvents()
     {
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
+        if (input_manager_->shouldQuit())
         {
-            if (event.type == SDL_EVENT_QUIT)
-            {
-                is_running_ = false;
-            }
+            is_running_ = false;
         }
     }
 
     void GameApp::update(float /* delta_time */)
     {
         testCamera();
+        testInputManager();
     }
 
     void GameApp::render()
@@ -220,6 +221,20 @@ namespace engine::core
         return true;
     }
 
+    bool GameApp::initInputManager()
+    {
+        try
+        {
+            input_manager_ = std::make_unique<engine::input::InputManager>(sdl_renderer_, config_.get());
+        }
+        catch (const std::exception &e)
+        {
+            spdlog::error("InputManager 初始化失败: {}", e.what());
+            return false;
+        }
+        return true;
+    }
+
     void GameApp::testResourceManager()
     {
         resource_manager_->getTexture("assets/textures/Actors/eagle-attack.png");
@@ -259,6 +274,36 @@ namespace engine::core
             camera_->move(glm::vec2(1.0f, 0.0f));
         if (keyboard_state[SDL_SCANCODE_ESCAPE])
             is_running_ = false;
+    }
+
+    void GameApp::testInputManager()
+    {
+        std::vector<std::string> actions = {
+            "move_up",
+            "move_down",
+            "move_left",
+            "move_right",
+            "jump",
+            "attack",
+            "pause",
+            "MouseLeftClick",
+            "MouseRightClick"};
+
+        for (const auto &action : actions)
+        {
+            if (input_manager_->isActionPressed(action))
+            {
+                spdlog::info(" {} 按下 ", action);
+            }
+            if (input_manager_->isActionReleased(action))
+            {
+                spdlog::info(" {} 抬起 ", action);
+            }
+            if (input_manager_->isActionDown(action))
+            {
+                spdlog::info(" {} 按下中 ", action);
+            }
+        }
     }
 
 } // namespace engine::core

@@ -14,6 +14,10 @@ namespace engine::render
     class Renderer;
     class Sprite;
 }
+namespace engine::input
+{
+    class InputManager;
+}
 namespace engine::core
 {
     class Time;
@@ -40,6 +44,9 @@ namespace engine::core
         std::unique_ptr<engine::render::Camera> camera_; // 用于处理视口变换和跟随
         // 配置管理器
         std::unique_ptr<engine::core::Config> config_; // 用于加载和管理游戏配置设置
+
+        // 输入管理器
+        std::unique_ptr<engine::input::InputManager> input_manager_; // 用于处理用户输入和动作映射
 
     public:
         GameApp();
@@ -73,11 +80,13 @@ namespace engine::core
         [[nodiscard]] bool initRenderer();
         [[nodiscard]] bool initCamera();
         [[nodiscard]] bool initConfig();
+        [[nodiscard]] bool initInputManager();
 
         // 测试用函数
         void testResourceManager();
         void testRenderer();
         void testCamera();
+        void testInputManager();
     };
 
 } // namespace engine::core

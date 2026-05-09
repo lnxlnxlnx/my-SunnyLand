@@ -19,6 +19,7 @@ namespace engine::input
             throw std::runtime_error("InputManager 初始化失败: SDL_Renderer 指针不能为空");
         }
         sdl_renderer_ = sdl_renderer;
+        // 会用到config但是不持有它，而且也不存指针，不拷贝
         initializeMappings(config);
 
         spdlog::trace("InputManager 创建成功");
@@ -92,6 +93,11 @@ namespace engine::input
     }
     // --- 状态查询方法 ---
 
+    /*** 
+     * @description: 检测指定动作是否处于按下状态（包括刚按下和持续按下）。如果动作未定义，则返回 false。
+     * @param {string} &action_name
+     * @return {*}
+     */
     bool InputManager::isActionDown(const std::string &action_name) const
     {
         // C++17 引入的 “带有初始化语句的 if 语句”
@@ -102,6 +108,11 @@ namespace engine::input
         return false;
     }
 
+    /*** 
+     * @description: 检测指定动作是否处于刚按下状态。如果动作未定义，则返回 false。
+     * @param {string} &action_name
+     * @return {*}
+     */
     bool InputManager::isActionPressed(const std::string &action_name) const
     {
         if (auto it = action_states_.find(action_name); it != action_states_.end())
@@ -135,6 +146,10 @@ namespace engine::input
         return mouse_position_;
     }
 
+    /*** 
+     * @description: TODO: 获取逻辑坐标，不是很懂
+     * @return {*}
+     */
     glm::vec2 InputManager::getLogicalMousePosition() const
     {
         glm::vec2 logical_pos;
@@ -153,6 +168,7 @@ namespace engine::input
             spdlog::error("输入管理器: Config 为空指针");
             throw std::runtime_error("输入管理器: Config 为空指针");
         }
+        // NOTE: 如果要改按键最好还是用指针，而且如果input_mappings_里是个大对象，直接拷贝会很麻烦
         actions_to_keyname_map_ = config->input_mappings_; // 获取配置中的输入映射（动作 -> 按键名称）
         scancode_to_actions_map_.clear();
         mouse_button_to_actions_map_.clear();
@@ -252,3 +268,4 @@ namespace engine::input
         }
     }
 }
+
