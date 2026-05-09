@@ -17,6 +17,7 @@ namespace engine::render
 namespace engine::core
 {
     class Time;
+    class Config;
     /**
      * @brief 主游戏应用程序类，初始化SDL，管理游戏循环。
      */

@@ -39,6 +39,7 @@ add_executable(${TARGET}
                 src/engine/resource/texture_manager.cpp
                 src/engine/render/camera.cpp
                 src/engine/render/renderer.cpp
+                src/engine/core/config.cpp
                 )
 
 # 链接库
