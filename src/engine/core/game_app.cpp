@@ -195,7 +195,7 @@ namespace engine::core
     {
         try
         {
-            auto viewport_size = glm::vec2(config_->window_width_, config_->window_height_);
+            auto viewport_size = glm::vec2(config_->window_width_ / 2.0f, config_->window_height_ / 2.0f); // 窗口分辨率的一半，与逻辑分辨率一致
             camera_ = std::make_unique<engine::render::Camera>(viewport_size);
         }
         catch (const std::exception &e)
