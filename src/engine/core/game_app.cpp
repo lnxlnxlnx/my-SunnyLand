@@ -15,6 +15,7 @@
 #include "../render/camera.h"
 #include "../render/sprite.h"
 #include "../input/input_manager.h"
+#include "../object/game_object.h"
 
 namespace engine::core
 {
@@ -73,6 +74,7 @@ namespace engine::core
         // testResourceManager();
 
         is_running_ = true;
+        testGameObject(); // 测试 GameObject 和 Component 系统
         return true;
     }
 
@@ -304,6 +306,12 @@ namespace engine::core
                 spdlog::info(" {} 按下中 ", action);
             }
         }
+    }
+
+    void GameApp::testGameObject()
+    {
+        engine::object::GameObject game_object("TestComponent", "testTag");
+        game_object.addComponent<engine::component::Component>();
     }
 
 } // namespace engine::core

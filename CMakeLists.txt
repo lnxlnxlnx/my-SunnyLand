@@ -41,6 +41,8 @@ add_executable(${TARGET}
                 src/engine/render/camera.cpp
                 src/engine/render/renderer.cpp
                 src/engine/input/input_manager.cpp
+                src/engine/object/game_object.cpp
+                src/engine/component/component.cpp
                 )
 
 # 链接库
