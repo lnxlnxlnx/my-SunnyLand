@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <variant>
 #include <SDL3/SDL_render.h>
 #include <glm/vec2.hpp>
 
@@ -24,8 +25,7 @@ class InputManager final {
 private:
     SDL_Renderer* sdl_renderer_;                                            ///< @brief 用于获取逻辑坐标的 SDL_Renderer 指针
     std::unordered_map<std::string, std::vector<std::string>> actions_to_keyname_map_;      ///< @brief 存储动作名称到按键名称列表的映射
-    std::unordered_map<SDL_Scancode, std::vector<std::string>> scancode_to_actions_map_;///< @brief 从键盘（Scancode）到关联的动作名称列表
-    std::unordered_map<Uint8, std::vector<std::string>> mouse_button_to_actions_map_;   ///< @brief 从鼠标按钮 (Uint8) 到关联的动作名称列表
+    std::unordered_map<std::variant<SDL_Scancode, Uint32>, std::vector<std::string>> input_to_actions_map_;///< @brief 从键盘（Scancode）到关联的动作名称列表
 
     std::unordered_map<std::string, ActionState> action_states_;    ///< @brief 存储每个动作的当前状态
 
