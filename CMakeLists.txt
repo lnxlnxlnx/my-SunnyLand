@@ -43,6 +43,8 @@ add_executable(${TARGET}
                 src/engine/input/input_manager.cpp
                 src/engine/object/game_object.cpp
                 src/engine/component/component.cpp
+                src/engine/component/transform_component.cpp
+                src/engine/component/sprite_component.cpp
                 src/engine/core/context.cpp
                 )
 

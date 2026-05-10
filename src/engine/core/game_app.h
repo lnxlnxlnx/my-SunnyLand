@@ -22,6 +22,7 @@ namespace engine::core
 {
     class Time;
     class Config;
+    class Context;
     /**
      * @brief 主游戏应用程序类，初始化SDL，管理游戏循环。
      */
@@ -47,6 +48,9 @@ namespace engine::core
 
         // 输入管理器
         std::unique_ptr<engine::input::InputManager> input_manager_; // 用于处理用户输入和动作映射
+
+        // 上下文对象，持有对核心模块的引用，方便传递给游戏对象和组件
+        std::unique_ptr<Context> context_; // 用于简化依赖注入
 
     public:
         GameApp();
@@ -81,6 +85,7 @@ namespace engine::core
         [[nodiscard]] bool initCamera();
         [[nodiscard]] bool initConfig();
         [[nodiscard]] bool initInputManager();
+        [[nodiscard]] bool initContext();
 
         // 测试用函数
         void testResourceManager();
